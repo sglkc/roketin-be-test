@@ -147,6 +147,20 @@ func updateMovie(c *gin.Context) {
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "movie not found"})
 }
 
+func deleteMovie(c *gin.Context) {
+	id := c.Param("id")
+
+	for i, movie := range movies {
+		if id == strconv.Itoa(movie.Id) {
+			movies = append(movies[:i], movies[i+1:]...)
+			c.IndentedJSON(http.StatusOK, gin.H{"message": "movie deleted"})
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "movie not found"})
+}
+
 func main() {
 	for _, movie := range movies {
 		if movie.Id > id {
@@ -159,6 +173,7 @@ func main() {
 	router.GET("/movies/search", searchMovie)
 	router.POST("/movies", postMovie)
 	router.PUT("/movies/:id", updateMovie)
+	router.DELETE("/movies/:id", deleteMovie)
 
 	router.Run("localhost:8080")
 }
