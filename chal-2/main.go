@@ -9,11 +9,13 @@ package main
 
 import (
 	"net/http"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Movie struct {
+	Id          int      `json:"id"`
 	Title       string   `json:"title"`
 	Description string   `json:"description"`
 	Duration    int      `json:"duration"` // in minutes
@@ -23,6 +25,7 @@ type Movie struct {
 
 var movies = []Movie{
 	{
+		Id:          1,
 		Title:       "Final Destination: Bloodlines",
 		Description: "Plagued by a recurring violent nightmare, a college student returns home to find the one person who can break the cycle and save her family from the horrific fate that inevitably awaits them.",
 		Duration:    90,
@@ -30,6 +33,7 @@ var movies = []Movie{
 		Genres:      []string{"Horror", "Splatter Horror"},
 	},
 	{
+		Id:          2,
 		Title:       "Mission: Impossible - The Final Reckoning",
 		Description: "Our lives are the sum of our choices. Tom Cruise is Ethan Hunt in Mission: Impossible - The Final Reckoning.",
 		Duration:    169,
@@ -40,6 +44,19 @@ var movies = []Movie{
 
 func getMovies(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, movies)
+}
+
+func getMovieById(c *gin.Context) {
+	id := c.Param("id")
+
+	for _, movie := range movies {
+		if id == strconv.Itoa(movie.Id) {
+			c.IndentedJSON(http.StatusOK, movie)
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "movie not found"})
 }
 
 func postMovie(c *gin.Context) {
@@ -56,6 +73,7 @@ func postMovie(c *gin.Context) {
 func main() {
 	router := gin.Default()
 	router.GET("/movies", getMovies)
+	router.GET("/movies/:id", getMovieById)
 	router.POST("/movies", postMovie)
 
 	router.Run("localhost:8080")
