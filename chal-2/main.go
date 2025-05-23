@@ -42,9 +42,21 @@ func getMovies(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, movies)
 }
 
+func postMovie(c *gin.Context) {
+	var newMovie Movie
+
+	if err := c.BindJSON(&newMovie); err != nil {
+		return
+	}
+
+	movies = append(movies, newMovie)
+	c.IndentedJSON(http.StatusCreated, newMovie)
+}
+
 func main() {
 	router := gin.Default()
 	router.GET("/movies", getMovies)
+	router.POST("/movies", postMovie)
 
 	router.Run("localhost:8080")
 }
