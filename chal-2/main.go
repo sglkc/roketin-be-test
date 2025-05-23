@@ -45,6 +45,33 @@ var movies = []Movie{
 
 var id int = 0
 
+func paginate(c *gin.Context, movies []Movie) []Movie {
+	page := c.Query("page")
+	limit := c.Query("limit")
+
+	if page == "" {
+		page = "1"
+	}
+	if limit == "" {
+		limit = "10"
+	}
+
+	pageInt, _ := strconv.Atoi(page)
+	limitInt, _ := strconv.Atoi(limit)
+
+	start := (pageInt - 1) * limitInt
+	end := start + limitInt
+
+	if start > len(movies) {
+		return []Movie{}
+	}
+	if end > len(movies) {
+		end = len(movies)
+	}
+
+	return movies[start:end]
+}
+
 func searchMovie(c *gin.Context) {
 	title := strings.ToLower(c.Query("title"))
 	description := strings.ToLower(c.Query("description"))
@@ -67,11 +94,11 @@ func searchMovie(c *gin.Context) {
 		}
 	}
 
-	c.IndentedJSON(http.StatusOK, filteredMovies)
+	c.IndentedJSON(http.StatusOK, paginate(c, filteredMovies))
 }
 
 func getMovies(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, movies)
+	c.IndentedJSON(http.StatusOK, paginate(c, movies))
 }
 
 func getMovieById(c *gin.Context) {
