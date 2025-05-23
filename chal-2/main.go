@@ -10,6 +10,7 @@ package main
 import (
 	"net/http"
 	"strconv"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 )
@@ -43,6 +44,31 @@ var movies = []Movie{
 }
 
 var id int = 0
+
+func searchMovie(c *gin.Context) {
+	title := strings.ToLower(c.Query("title"))
+	description := strings.ToLower(c.Query("description"))
+	artist := strings.ToLower(c.Query("artist"))
+	genre := strings.ToLower(c.Query("genre"))
+
+	var filteredMovies []Movie
+
+	for _, movie := range movies {
+		movieTitle := strings.ToLower(movie.Title)
+		movieDescription := strings.ToLower(movie.Description)
+		movieArtists := strings.ToLower(strings.Join(movie.Artists, ", "))
+		movieGenres := strings.ToLower(strings.Join(movie.Genres, ", "))
+
+		if (strings.Contains(movieTitle, title)) ||
+			(strings.Contains(movieDescription, description)) ||
+			(strings.Contains(movieArtists, artist)) ||
+			(strings.Contains(movieGenres, genre)) {
+			filteredMovies = append(filteredMovies, movie)
+		}
+	}
+
+	c.IndentedJSON(http.StatusOK, filteredMovies)
+}
 
 func getMovies(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, movies)
@@ -103,6 +129,7 @@ func main() {
 	router := gin.Default()
 	router.GET("/movies", getMovies)
 	router.GET("/movies/:id", getMovieById)
+	router.GET("/movies/search", searchMovie)
 	router.POST("/movies", postMovie)
 	router.PUT("/movies/:id", updateMovie)
 
