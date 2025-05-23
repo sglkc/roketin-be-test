@@ -42,6 +42,8 @@ var movies = []Movie{
 	},
 }
 
+var id int = 0
+
 func getMovies(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, movies)
 }
@@ -66,15 +68,43 @@ func postMovie(c *gin.Context) {
 		return
 	}
 
+	id++
+	newMovie.Id = id
+
 	movies = append(movies, newMovie)
 	c.IndentedJSON(http.StatusCreated, newMovie)
 }
 
+func updateMovie(c *gin.Context) {
+	id := c.Param("id")
+	var updatedMovie Movie
+
+	if err := c.BindJSON(&updatedMovie); err != nil {
+		return
+	}
+
+	for i, movie := range movies {
+		if id == strconv.Itoa(movie.Id) {
+			movies[i] = updatedMovie
+			c.IndentedJSON(http.StatusOK, updatedMovie)
+			return
+		}
+	}
+
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "movie not found"})
+}
+
 func main() {
+	for _, movie := range movies {
+		if movie.Id > id {
+			id = movie.Id
+		}
+	}
 	router := gin.Default()
 	router.GET("/movies", getMovies)
 	router.GET("/movies/:id", getMovieById)
 	router.POST("/movies", postMovie)
+	router.PUT("/movies/:id", updateMovie)
 
 	router.Run("localhost:8080")
 }
