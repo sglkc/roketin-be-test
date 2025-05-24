@@ -13,7 +13,7 @@ import (
 	"strconv"
 	"strings"
 
-	_ "roketinbe-test/chal-2/docs"
+	_ "github.com/sglkc/roketin-be-test/chal-2/docs"
 	"github.com/gin-gonic/gin"
 	"github.com/swaggo/files"
 	"github.com/swaggo/gin-swagger"
