@@ -13,29 +13,30 @@ import (
 	"strconv"
 	"strings"
 
-	_ "github.com/sglkc/roketin-be-test/chal-2/docs"
 	"github.com/gin-gonic/gin"
-	"github.com/swaggo/files"
-	"github.com/swaggo/gin-swagger"
+	_ "github.com/sglkc/roketin-be-test/chal-2/docs"
+	swaggerFiles "github.com/swaggo/files"
+	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-// @title Movies API
-// @version 1.0
-// @description This is a sample movies API using Gin framework.
-// @host localhost:8080
-// @contact.name sglkc
-// @contact.url https://github.com/sglkc/roketin-be-test
+//	@title			Movies API
+//	@version		1.0
+//	@description	This is a sample movies API using Gin framework.
+//	@contact.name	sglkc
+//	@contact.url	https://github.com/sglkc/roketin-be-test
 
-// @produce json
-// @accept json
+//	@produce	json
+//	@accept		json
 
+// https://gin-gonic.com/en/docs/examples/binding-and-validation/
+// https://pkg.go.dev/github.com/go-playground/validator/v10
 type Movie struct {
 	Id          int      `json:"id"`
-	Title       string   `json:"title"`
-	Description string   `json:"description"`
-	Duration    int      `json:"duration"` // in minutes
-	Artists     []string `json:"artists"`
-	Genres      []string `json:"genres"`
+	Title       string   `json:"title" binding:"required"`
+	Description string   `json:"description" binding:"required"`
+	Duration    int      `json:"duration" binding:"required,min=1"`
+	Artists     []string `json:"artists" binding:"required,min=1"`
+	Genres      []string `json:"genres" binding:"required,min=1"`
 }
 
 var movies = []Movie{
@@ -57,7 +58,7 @@ var movies = []Movie{
 	},
 }
 
-var id int = 0
+var idPrimaryKey int = 0
 
 func paginate(c *gin.Context, movies []Movie) []Movie {
 	page := c.Query("page")
@@ -70,8 +71,15 @@ func paginate(c *gin.Context, movies []Movie) []Movie {
 		limit = "10"
 	}
 
-	pageInt, _ := strconv.Atoi(page)
-	limitInt, _ := strconv.Atoi(limit)
+	pageInt, err := strconv.Atoi(page)
+	if err != nil || pageInt < 1 {
+		pageInt = 1
+	}
+
+	limitInt, err := strconv.Atoi(limit)
+	if err != nil || limitInt < 1 {
+		limitInt = 10
+	}
 
 	start := (pageInt - 1) * limitInt
 	end := start + limitInt
@@ -88,14 +96,15 @@ func paginate(c *gin.Context, movies []Movie) []Movie {
 
 // https://github.com/swaggo/swag/blob/master/README.md#declarative-comments-format
 
-// @Summary 		Search movies
-// @Description Search for movies by title, description, artist, or genre
-// @Param 			title 			 query string false "Movie title to search for"
-// @Param 			description  query string false "Movie description to search for"
-// @Param 			artist 			 query string false "Movie artist to search for"
-// @Param 			genre 			 query string false "Movie genre to search for"
-// @Success 		200 {array} Movie
-// @Router 			/movies/search [get]
+// @Summary		Search movies
+// @Description	Search for movies by title, description, artist, or genre
+// @Tags			Movies
+// @Param			title		query	string	false	"Movie title to search for"
+// @Param			description	query	string	false	"Movie description to search for"
+// @Param			artist		query	string	false	"Movie artist to search for"
+// @Param			genre		query	string	false	"Movie genre to search for"
+// @Success		200			{array}	Movie
+// @Router			/movies/search [get]
 func searchMovie(c *gin.Context) {
 	title := strings.ToLower(c.Query("title"))
 	description := strings.ToLower(c.Query("description"))
@@ -111,9 +120,9 @@ func searchMovie(c *gin.Context) {
 		movieGenres := strings.ToLower(strings.Join(movie.Genres, ", "))
 
 		if (strings.Contains(movieTitle, title)) ||
-		(strings.Contains(movieDescription, description)) ||
-		(strings.Contains(movieArtists, artist)) ||
-		(strings.Contains(movieGenres, genre)) {
+			(strings.Contains(movieDescription, description)) ||
+			(strings.Contains(movieArtists, artist)) ||
+			(strings.Contains(movieGenres, genre)) {
 			filteredMovies = append(filteredMovies, movie)
 		}
 	}
@@ -121,22 +130,24 @@ func searchMovie(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, paginate(c, filteredMovies))
 }
 
-// @Summary 		Get all movies
-// @Description Get a list of all movies with pagination
-// @Param 			page   query int false "Page number for pagination"  default(1)
-// @Param 			limit  query int false "Number of movies per page"   default(10)
-// @Success 		200 {array} Movie
-// @Router 			/movies [get]
+// @Summary		Get all movies
+// @Description	Get a list of all movies with pagination
+// @Tags			Movies
+// @Param			page	query	int	false	"Page number for pagination"	default(1)
+// @Param			limit	query	int	false	"Number of movies per page"		default(10)
+// @Success		200		{array}	Movie
+// @Router			/movies [get]
 func getMovies(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, paginate(c, movies))
 }
 
-// @Summary 		Get movie by ID
-// @Description Get movie by ID
-// @Param 			id path int true "Movie ID"
-// @Success 		200 {array} 	Movie
-// @Failure 		404 {object} 	object{message=string}
-// @Router 			/movies/{id} [get]
+// @Summary		Get movie
+// @Description	Get movie by ID
+// @Tags			Movies
+// @Param			id	path		int	true	"Movie ID"
+// @Success		200	{array}		Movie
+// @Failure		404	{object}	object{message=string}
+// @Router			/movies/{id} [get]
 func getMovieById(c *gin.Context) {
 	id := c.Param("id")
 
@@ -150,34 +161,37 @@ func getMovieById(c *gin.Context) {
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
 }
 
-// @Summary 		Create a new movie
-// @Description Create a new movie
-// @Param 			movie body Movie true "Movie object to create"
-// @Success 201 {object} Movie
-// @Failure 400 {object} object{message=string}
-// @Router /movies [post]
+// @Summary		Create a new movie
+// @Description	Create a new movie
+// @Tags			Movies
+// @Param			movie	body		Movie	true	"Movie object to create"
+// @Success		201		{object}	Movie
+// @Failure		400		{object}	object{message=string}
+// @Router			/movies [post]
 func postMovie(c *gin.Context) {
 	var newMovie Movie
 
 	if err := c.BindJSON(&newMovie); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid request body"})
 		return
 	}
 
-	id++
-	newMovie.Id = id
+	idPrimaryKey++
+	newMovie.Id = idPrimaryKey
 
 	movies = append(movies, newMovie)
 	c.IndentedJSON(http.StatusCreated, newMovie)
 }
 
-// @Summary 		Update a movie
-// @Description Update a movie by ID
-// @Param 			id path int true "Movie ID"
-// @Param 			movie body Movie true "Updated movie object"
-// @Success 200 {object} Movie
-// @Failure 400 {object} object{message=string}
-// @Failure 404 {object} object{message=string}
-// @Router /movies/{id} [put]
+// @Summary		Update a movie
+// @Description	Update a movie by ID
+// @Tags			Movies
+// @Param			id		path		int		true	"Movie ID"
+// @Param			movie	body		Movie	true	"Updated movie object"
+// @Success		200		{object}	Movie
+// @Failure		400		{object}	object{message=string}
+// @Failure		404		{object}	object{message=string}
+// @Router			/movies/{id} [put]
 func updateMovie(c *gin.Context) {
 	id := c.Param("id")
 	var updatedMovie Movie
@@ -198,12 +212,13 @@ func updateMovie(c *gin.Context) {
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
 }
 
-// @Summary 		Delete a movie
-// @Description Delete a movie by ID
-// @Param 			id path int true "Movie ID"
-// @Success 200 {object} object{message=string}
-// @Failure 404 {object} object{message=string}
-// @Router /movies/{id} [delete]
+// @Summary		Delete a movie
+// @Description	Delete a movie by ID
+// @Tags			Movies
+// @Param			id	path		int	true	"Movie ID"
+// @Success		200	{object}	object{message=string}
+// @Failure		404	{object}	object{message=string}
+// @Router			/movies/{id} [delete]
 func deleteMovie(c *gin.Context) {
 	id := c.Param("id")
 
@@ -220,8 +235,8 @@ func deleteMovie(c *gin.Context) {
 
 func main() {
 	for _, movie := range movies {
-		if movie.Id > id {
-			id = movie.Id
+		if movie.Id > idPrimaryKey {
+			idPrimaryKey = movie.Id
 		}
 	}
 	router := gin.Default()
@@ -233,6 +248,6 @@ func main() {
 	router.PUT("/movies/:id", updateMovie)
 	router.DELETE("/movies/:id", deleteMovie)
 
-	log.Println("Running at localhost:8000 (docs at http://localhost:8080/swagger/index.html)")
+	log.Println("Running at localhost:8080 (docs at http://localhost:8080/swagger/index.html)")
 	router.Run("localhost:8080")
 }

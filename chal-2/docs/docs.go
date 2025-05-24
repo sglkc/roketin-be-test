@@ -27,6 +27,9 @@ const docTemplate = `{
         "/movies": {
             "get": {
                 "description": "Get a list of all movies with pagination",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Get all movies",
                 "parameters": [
                     {
@@ -58,6 +61,9 @@ const docTemplate = `{
             },
             "post": {
                 "description": "Create a new movie",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Create a new movie",
                 "parameters": [
                     {
@@ -94,6 +100,9 @@ const docTemplate = `{
         "/movies/search": {
             "get": {
                 "description": "Search for movies by title, description, artist, or genre",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Search movies",
                 "parameters": [
                     {
@@ -137,7 +146,10 @@ const docTemplate = `{
         "/movies/{id}": {
             "get": {
                 "description": "Get movie by ID",
-                "summary": "Get movie by ID",
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Get movie",
                 "parameters": [
                     {
                         "type": "integer",
@@ -172,6 +184,9 @@ const docTemplate = `{
             },
             "put": {
                 "description": "Update a movie by ID",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Update a movie",
                 "parameters": [
                     {
@@ -224,6 +239,9 @@ const docTemplate = `{
             },
             "delete": {
                 "description": "Delete a movie by ID",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Delete a movie",
                 "parameters": [
                     {
@@ -264,9 +282,17 @@ const docTemplate = `{
     "definitions": {
         "main.Movie": {
             "type": "object",
+            "required": [
+                "artists",
+                "description",
+                "duration",
+                "genres",
+                "title"
+            ],
             "properties": {
                 "artists": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "type": "string"
                     }
@@ -275,11 +301,12 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "duration": {
-                    "description": "in minutes",
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "genres": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "type": "string"
                     }
@@ -298,7 +325,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:8080",
+	Host:             "",
 	BasePath:         "",
 	Schemes:          []string{},
 	Title:            "Movies API",

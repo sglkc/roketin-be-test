@@ -6,22 +6,29 @@ definitions:
       artists:
         items:
           type: string
+        minItems: 1
         type: array
       description:
         type: string
       duration:
-        description: in minutes
+        minimum: 1
         type: integer
       genres:
         items:
           type: string
+        minItems: 1
         type: array
       id:
         type: integer
       title:
         type: string
+    required:
+    - artists
+    - description
+    - duration
+    - genres
+    - title
     type: object
-host: localhost:8080
 info:
   contact:
     name: sglkc
@@ -52,6 +59,8 @@ paths:
               $ref: '#/definitions/main.Movie'
             type: array
       summary: Get all movies
+      tags:
+      - Movies
     post:
       description: Create a new movie
       parameters:
@@ -74,6 +83,8 @@ paths:
                 type: string
             type: object
       summary: Create a new movie
+      tags:
+      - Movies
   /movies/{id}:
     delete:
       description: Delete a movie by ID
@@ -99,6 +110,8 @@ paths:
                 type: string
             type: object
       summary: Delete a movie
+      tags:
+      - Movies
     get:
       description: Get movie by ID
       parameters:
@@ -121,7 +134,9 @@ paths:
               message:
                 type: string
             type: object
-      summary: Get movie by ID
+      summary: Get movie
+      tags:
+      - Movies
     put:
       description: Update a movie by ID
       parameters:
@@ -156,6 +171,8 @@ paths:
                 type: string
             type: object
       summary: Update a movie
+      tags:
+      - Movies
   /movies/search:
     get:
       description: Search for movies by title, description, artist, or genre
@@ -184,6 +201,8 @@ paths:
               $ref: '#/definitions/main.Movie'
             type: array
       summary: Search movies
+      tags:
+      - Movies
 produces:
 - application/json
 swagger: "2.0"

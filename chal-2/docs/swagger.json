@@ -15,11 +15,13 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8080",
     "paths": {
         "/movies": {
             "get": {
                 "description": "Get a list of all movies with pagination",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Get all movies",
                 "parameters": [
                     {
@@ -51,6 +53,9 @@
             },
             "post": {
                 "description": "Create a new movie",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Create a new movie",
                 "parameters": [
                     {
@@ -87,6 +92,9 @@
         "/movies/search": {
             "get": {
                 "description": "Search for movies by title, description, artist, or genre",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Search movies",
                 "parameters": [
                     {
@@ -130,7 +138,10 @@
         "/movies/{id}": {
             "get": {
                 "description": "Get movie by ID",
-                "summary": "Get movie by ID",
+                "tags": [
+                    "Movies"
+                ],
+                "summary": "Get movie",
                 "parameters": [
                     {
                         "type": "integer",
@@ -165,6 +176,9 @@
             },
             "put": {
                 "description": "Update a movie by ID",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Update a movie",
                 "parameters": [
                     {
@@ -217,6 +231,9 @@
             },
             "delete": {
                 "description": "Delete a movie by ID",
+                "tags": [
+                    "Movies"
+                ],
                 "summary": "Delete a movie",
                 "parameters": [
                     {
@@ -257,9 +274,17 @@
     "definitions": {
         "main.Movie": {
             "type": "object",
+            "required": [
+                "artists",
+                "description",
+                "duration",
+                "genres",
+                "title"
+            ],
             "properties": {
                 "artists": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "type": "string"
                     }
@@ -268,11 +293,12 @@
                     "type": "string"
                 },
                 "duration": {
-                    "description": "in minutes",
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "genres": {
                     "type": "array",
+                    "minItems": 1,
                     "items": {
                         "type": "string"
                     }
