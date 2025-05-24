@@ -1,0 +1,189 @@
+consumes:
+- application/json
+definitions:
+  main.Movie:
+    properties:
+      artists:
+        items:
+          type: string
+        type: array
+      description:
+        type: string
+      duration:
+        description: in minutes
+        type: integer
+      genres:
+        items:
+          type: string
+        type: array
+      id:
+        type: integer
+      title:
+        type: string
+    type: object
+host: localhost:8080
+info:
+  contact:
+    name: sglkc
+    url: https://github.com/sglkc/roketin-be-test
+  description: This is a sample movies API using Gin framework.
+  title: Movies API
+  version: "1.0"
+paths:
+  /movies:
+    get:
+      description: Get a list of all movies with pagination
+      parameters:
+      - default: 1
+        description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of movies per page
+        in: query
+        name: limit
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Movie'
+            type: array
+      summary: Get all movies
+    post:
+      description: Create a new movie
+      parameters:
+      - description: Movie object to create
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/main.Movie'
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/main.Movie'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+      summary: Create a new movie
+  /movies/{id}:
+    delete:
+      description: Delete a movie by ID
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+      summary: Delete a movie
+    get:
+      description: Get movie by ID
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Movie'
+            type: array
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+      summary: Get movie by ID
+    put:
+      description: Update a movie by ID
+      parameters:
+      - description: Movie ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Updated movie object
+        in: body
+        name: movie
+        required: true
+        schema:
+          $ref: '#/definitions/main.Movie'
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/main.Movie'
+        "400":
+          description: Bad Request
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+        "404":
+          description: Not Found
+          schema:
+            properties:
+              message:
+                type: string
+            type: object
+      summary: Update a movie
+  /movies/search:
+    get:
+      description: Search for movies by title, description, artist, or genre
+      parameters:
+      - description: Movie title to search for
+        in: query
+        name: title
+        type: string
+      - description: Movie description to search for
+        in: query
+        name: description
+        type: string
+      - description: Movie artist to search for
+        in: query
+        name: artist
+        type: string
+      - description: Movie genre to search for
+        in: query
+        name: genre
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/main.Movie'
+            type: array
+      summary: Search movies
+produces:
+- application/json
+swagger: "2.0"

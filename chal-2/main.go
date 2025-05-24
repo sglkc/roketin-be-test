@@ -8,12 +8,26 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"strconv"
 	"strings"
 
+	_ "roketinbe-test/chal-2/docs"
 	"github.com/gin-gonic/gin"
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
 )
+
+// @title Movies API
+// @version 1.0
+// @description This is a sample movies API using Gin framework.
+// @host localhost:8080
+// @contact.name sglkc
+// @contact.url https://github.com/sglkc/roketin-be-test
+
+// @produce json
+// @accept json
 
 type Movie struct {
 	Id          int      `json:"id"`
@@ -72,6 +86,16 @@ func paginate(c *gin.Context, movies []Movie) []Movie {
 	return movies[start:end]
 }
 
+// https://github.com/swaggo/swag/blob/master/README.md#declarative-comments-format
+
+// @Summary 		Search movies
+// @Description Search for movies by title, description, artist, or genre
+// @Param 			title 			 query string false "Movie title to search for"
+// @Param 			description  query string false "Movie description to search for"
+// @Param 			artist 			 query string false "Movie artist to search for"
+// @Param 			genre 			 query string false "Movie genre to search for"
+// @Success 		200 {array} Movie
+// @Router 			/movies/search [get]
 func searchMovie(c *gin.Context) {
 	title := strings.ToLower(c.Query("title"))
 	description := strings.ToLower(c.Query("description"))
@@ -87,9 +111,9 @@ func searchMovie(c *gin.Context) {
 		movieGenres := strings.ToLower(strings.Join(movie.Genres, ", "))
 
 		if (strings.Contains(movieTitle, title)) ||
-			(strings.Contains(movieDescription, description)) ||
-			(strings.Contains(movieArtists, artist)) ||
-			(strings.Contains(movieGenres, genre)) {
+		(strings.Contains(movieDescription, description)) ||
+		(strings.Contains(movieArtists, artist)) ||
+		(strings.Contains(movieGenres, genre)) {
 			filteredMovies = append(filteredMovies, movie)
 		}
 	}
@@ -97,10 +121,22 @@ func searchMovie(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, paginate(c, filteredMovies))
 }
 
+// @Summary 		Get all movies
+// @Description Get a list of all movies with pagination
+// @Param 			page   query int false "Page number for pagination"  default(1)
+// @Param 			limit  query int false "Number of movies per page"   default(10)
+// @Success 		200 {array} Movie
+// @Router 			/movies [get]
 func getMovies(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, paginate(c, movies))
 }
 
+// @Summary 		Get movie by ID
+// @Description Get movie by ID
+// @Param 			id path int true "Movie ID"
+// @Success 		200 {array} 	Movie
+// @Failure 		404 {object} 	object{message=string}
+// @Router 			/movies/{id} [get]
 func getMovieById(c *gin.Context) {
 	id := c.Param("id")
 
@@ -111,9 +147,15 @@ func getMovieById(c *gin.Context) {
 		}
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "movie not found"})
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
 }
 
+// @Summary 		Create a new movie
+// @Description Create a new movie
+// @Param 			movie body Movie true "Movie object to create"
+// @Success 201 {object} Movie
+// @Failure 400 {object} object{message=string}
+// @Router /movies [post]
 func postMovie(c *gin.Context) {
 	var newMovie Movie
 
@@ -128,11 +170,20 @@ func postMovie(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newMovie)
 }
 
+// @Summary 		Update a movie
+// @Description Update a movie by ID
+// @Param 			id path int true "Movie ID"
+// @Param 			movie body Movie true "Updated movie object"
+// @Success 200 {object} Movie
+// @Failure 400 {object} object{message=string}
+// @Failure 404 {object} object{message=string}
+// @Router /movies/{id} [put]
 func updateMovie(c *gin.Context) {
 	id := c.Param("id")
 	var updatedMovie Movie
 
 	if err := c.BindJSON(&updatedMovie); err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid request body"})
 		return
 	}
 
@@ -144,9 +195,15 @@ func updateMovie(c *gin.Context) {
 		}
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "movie not found"})
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
 }
 
+// @Summary 		Delete a movie
+// @Description Delete a movie by ID
+// @Param 			id path int true "Movie ID"
+// @Success 200 {object} object{message=string}
+// @Failure 404 {object} object{message=string}
+// @Router /movies/{id} [delete]
 func deleteMovie(c *gin.Context) {
 	id := c.Param("id")
 
@@ -168,6 +225,7 @@ func main() {
 		}
 	}
 	router := gin.Default()
+	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/movies", getMovies)
 	router.GET("/movies/:id", getMovieById)
 	router.GET("/movies/search", searchMovie)
@@ -175,5 +233,6 @@ func main() {
 	router.PUT("/movies/:id", updateMovie)
 	router.DELETE("/movies/:id", deleteMovie)
 
+	log.Println("Running at localhost:8000 (docs at http://localhost:8080/swagger/index.html)")
 	router.Run("localhost:8080")
 }
