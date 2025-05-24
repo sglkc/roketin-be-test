@@ -31,7 +31,7 @@ import (
 // https://gin-gonic.com/en/docs/examples/binding-and-validation/
 // https://pkg.go.dev/github.com/go-playground/validator/v10
 type Movie struct {
-	Id          int      `json:"id"`
+	Id          int      `json:"id" binding:"min=1"`
 	Title       string   `json:"title" binding:"required"`
 	Description string   `json:"description" binding:"required"`
 	Duration    int      `json:"duration" binding:"required,min=1"`
@@ -94,6 +94,20 @@ func paginate(c *gin.Context, movies []Movie) []Movie {
 	return movies[start:end]
 }
 
+// find movie by id also get latest primary key while at it
+func findMovieById(id int) *Movie {
+	for _, movie := range movies {
+		if movie.Id > idPrimaryKey {
+			idPrimaryKey = movie.Id
+		}
+
+		if movie.Id == id {
+			return &movie
+		}
+	}
+	return nil
+}
+
 // https://github.com/swaggo/swag/blob/master/README.md#declarative-comments-format
 
 // @Summary		Search movies
@@ -151,11 +165,16 @@ func getMovies(c *gin.Context) {
 func getMovieById(c *gin.Context) {
 	id := c.Param("id")
 
-	for _, movie := range movies {
-		if id == strconv.Itoa(movie.Id) {
-			c.IndentedJSON(http.StatusOK, movie)
-			return
-		}
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid movie ID"})
+		return
+	}
+
+	movie := findMovieById(idInt)
+	if movie != nil {
+		c.IndentedJSON(http.StatusOK, *movie)
+		return
 	}
 
 	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
@@ -171,11 +190,13 @@ func getMovieById(c *gin.Context) {
 func postMovie(c *gin.Context) {
 	var newMovie Movie
 
-	if err := c.BindJSON(&newMovie); err != nil {
+	if err := c.ShouldBindJSON(&newMovie); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid request body"})
 		return
 	}
 
+	// assume primary key is the latest ID in the list
+	findMovieById(newMovie.Id)
 	idPrimaryKey++
 	newMovie.Id = idPrimaryKey
 
@@ -196,20 +217,33 @@ func updateMovie(c *gin.Context) {
 	id := c.Param("id")
 	var updatedMovie Movie
 
-	if err := c.BindJSON(&updatedMovie); err != nil {
+	idInt, err := strconv.Atoi(id)
+	if err != nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid movie ID"})
+		return
+	}
+
+	if err := c.ShouldBindJSON(&updatedMovie); err != nil {
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid request body"})
 		return
 	}
 
-	for i, movie := range movies {
-		if id == strconv.Itoa(movie.Id) {
-			movies[i] = updatedMovie
-			c.IndentedJSON(http.StatusOK, updatedMovie)
+	movie := findMovieById(idInt)
+	if movie == nil {
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Movie not found"})
+		return
+	}
+
+	// check if id is updated, if so, check if it already exists
+	if updatedMovie.Id != movie.Id {
+		if findMovieById(updatedMovie.Id) != nil {
+			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Movie with updated ID already exists"})
 			return
 		}
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
+	*movie = updatedMovie
+	c.IndentedJSON(http.StatusOK, updatedMovie)
 }
 
 // @Summary		Delete a movie
