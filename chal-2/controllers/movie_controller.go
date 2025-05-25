@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/sglkc/roketin-be-test/chal-2/database"
+	"github.com/sglkc/roketin-be-test/chal-2/dto"
 	"github.com/sglkc/roketin-be-test/chal-2/models"
 	"github.com/sglkc/roketin-be-test/chal-2/utils"
 )
@@ -36,7 +37,7 @@ func findMovieById(id int) *models.Movie {
 // @Param			genre		query	string	false	"Movie genre to search for"
 // @Param			page		query	int		false	"Page number for pagination"	default(1)
 // @Param			limit		query	int		false	"Number of movies per page"		default(10)
-// @Success		200			{array}	models.Movie
+// @Success		200			{array}	dto.PaginatedResponse[models.Movie]
 // @Router			/movies/search [get]
 func SearchMovie(c *gin.Context) {
 	title := strings.ToLower(c.Query("title"))
@@ -60,7 +61,19 @@ func SearchMovie(c *gin.Context) {
 		}
 	}
 
-	c.IndentedJSON(http.StatusOK, utils.Paginate(c, filteredMovies))
+	data, page, limit := utils.Paginate(c, filteredMovies)
+	response := dto.PaginatedResponse[models.Movie]{
+		BaseResponse: dto.BaseResponse{
+			Message: "Movies found",
+			Success: true,
+		},
+		Data:  data,
+		Page:  page,
+		Limit: limit,
+		Count: len(filteredMovies),
+	}
+
+	c.IndentedJSON(http.StatusOK, response)
 }
 
 // @Summary		Get all movies
@@ -68,10 +81,22 @@ func SearchMovie(c *gin.Context) {
 // @Tags			Movies
 // @Param			page	query	int	false	"Page number for pagination"	default(1)
 // @Param			limit	query	int	false	"Number of movies per page"		default(10)
-// @Success		200		{array}	models.Movie
+// @Success		200		{array}	dto.PaginatedResponse[models.Movie]
 // @Router			/movies [get]
 func GetMovies(c *gin.Context) {
-	c.IndentedJSON(http.StatusOK, utils.Paginate(c, database.Movies))
+	data, page, limit := utils.Paginate(c, database.Movies)
+	response := dto.PaginatedResponse[models.Movie]{
+		BaseResponse: dto.BaseResponse{
+			Message: "Movies found",
+			Success: true,
+		},
+		Data:  data,
+		Page:  page,
+		Limit: limit,
+		Count: len(database.Movies),
+	}
+
+	c.IndentedJSON(http.StatusOK, response)
 }
 
 // @Summary		Get movie

@@ -1,6 +1,23 @@
 consumes:
 - application/json
 definitions:
+  dto.PaginatedResponse-models_Movie:
+    properties:
+      count:
+        type: integer
+      data:
+        items:
+          $ref: '#/definitions/models.Movie'
+        type: array
+      limit:
+        type: integer
+      message:
+        type: string
+      page:
+        type: integer
+      success:
+        type: boolean
+    type: object
   models.Movie:
     properties:
       artists:
@@ -57,7 +74,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Movie'
+              $ref: '#/definitions/dto.PaginatedResponse-models_Movie'
             type: array
       summary: Get all movies
       tags:
@@ -194,12 +211,22 @@ paths:
         in: query
         name: genre
         type: string
+      - default: 1
+        description: Page number for pagination
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: Number of movies per page
+        in: query
+        name: limit
+        type: integer
       responses:
         "200":
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Movie'
+              $ref: '#/definitions/dto.PaginatedResponse-models_Movie'
             type: array
       summary: Search movies
       tags:

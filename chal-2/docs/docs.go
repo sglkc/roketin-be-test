@@ -53,7 +53,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Movie"
+                                "$ref": "#/definitions/dto.PaginatedResponse-models_Movie"
                             }
                         }
                     }
@@ -128,6 +128,20 @@ const docTemplate = `{
                         "description": "Movie genre to search for",
                         "name": "genre",
                         "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number for pagination",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 10,
+                        "description": "Number of movies per page",
+                        "name": "limit",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -136,7 +150,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/models.Movie"
+                                "$ref": "#/definitions/dto.PaginatedResponse-models_Movie"
                             }
                         }
                     }
@@ -280,6 +294,32 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "dto.PaginatedResponse-models_Movie": {
+            "type": "object",
+            "properties": {
+                "count": {
+                    "type": "integer"
+                },
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/models.Movie"
+                    }
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "page": {
+                    "type": "integer"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "models.Movie": {
             "type": "object",
             "required": [
