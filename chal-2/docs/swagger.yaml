@@ -1,6 +1,29 @@
 consumes:
 - application/json
 definitions:
+  dto.BaseResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.DataResponse-models_Movie:
+    properties:
+      data:
+        $ref: '#/definitions/models.Movie'
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+  dto.ErrorResponse:
+    properties:
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
   dto.PaginatedResponse-models_Movie:
     properties:
       count:
@@ -92,14 +115,11 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/models.Movie'
+            $ref: '#/definitions/dto.DataResponse-models_Movie'
         "400":
           description: Bad Request
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Create a new movie
       tags:
       - Movies
@@ -116,17 +136,11 @@ paths:
         "200":
           description: OK
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            $ref: '#/definitions/dto.BaseResponse'
         "404":
           description: Not Found
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Delete a movie
       tags:
       - Movies
@@ -143,15 +157,16 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/models.Movie'
+              $ref: '#/definitions/dto.DataResponse-models_Movie'
             type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Get movie
       tags:
       - Movies
@@ -173,21 +188,15 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.Movie'
+            $ref: '#/definitions/dto.DataResponse-models_Movie'
         "400":
           description: Bad Request
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            $ref: '#/definitions/dto.ErrorResponse'
         "404":
           description: Not Found
           schema:
-            properties:
-              message:
-                type: string
-            type: object
+            $ref: '#/definitions/dto.ErrorResponse'
       summary: Update a movie
       tags:
       - Movies

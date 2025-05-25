@@ -62,7 +62,8 @@ func SearchMovie(c *gin.Context) {
 	}
 
 	data, page, limit := utils.Paginate(c, filteredMovies)
-	response := dto.PaginatedResponse[models.Movie]{
+
+	c.IndentedJSON(http.StatusOK, dto.PaginatedResponse[models.Movie]{
 		BaseResponse: dto.BaseResponse{
 			Message: "Movies found",
 			Success: true,
@@ -71,9 +72,7 @@ func SearchMovie(c *gin.Context) {
 		Page:  page,
 		Limit: limit,
 		Count: len(filteredMovies),
-	}
-
-	c.IndentedJSON(http.StatusOK, response)
+	})
 }
 
 // @Summary		Get all movies
@@ -85,7 +84,8 @@ func SearchMovie(c *gin.Context) {
 // @Router			/movies [get]
 func GetMovies(c *gin.Context) {
 	data, page, limit := utils.Paginate(c, database.Movies)
-	response := dto.PaginatedResponse[models.Movie]{
+
+	c.IndentedJSON(http.StatusOK, dto.PaginatedResponse[models.Movie]{
 		BaseResponse: dto.BaseResponse{
 			Message: "Movies found",
 			Success: true,
@@ -94,48 +94,68 @@ func GetMovies(c *gin.Context) {
 		Page:  page,
 		Limit: limit,
 		Count: len(database.Movies),
-	}
-
-	c.IndentedJSON(http.StatusOK, response)
+	})
 }
 
 // @Summary		Get movie
 // @Description	Get movie by ID
 // @Tags			Movies
 // @Param			id	path		int	true	"Movie ID"
-// @Success		200	{array}		models.Movie
-// @Failure		404	{object}	object{message=string}
+// @Success		200	{array}		dto.DataResponse[models.Movie]
+// @Failure		400	{object}	dto.ErrorResponse
+// @Failure		404	{object}	dto.ErrorResponse
 // @Router			/movies/{id} [get]
 func GetMovieById(c *gin.Context) {
 	id := c.Param("id")
 
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid movie ID"})
+		c.IndentedJSON(http.StatusBadRequest, dto.ErrorResponse{
+			BaseResponse: dto.BaseResponse{
+				Message: "Invalid movie ID",
+				Success: false,
+			},
+		})
 		return
 	}
 
 	movie := findMovieById(idInt)
 	if movie != nil {
-		c.IndentedJSON(http.StatusOK, *movie)
+		c.IndentedJSON(http.StatusOK, dto.DataResponse[models.Movie]{
+			BaseResponse: dto.BaseResponse{
+				Message: "Movie found",
+				Success: true,
+			},
+			Data: *movie,
+		})
 		return
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
+	c.IndentedJSON(http.StatusNotFound, dto.ErrorResponse{
+		BaseResponse: dto.BaseResponse{
+			Message: "Movie not found",
+			Success: false,
+		},
+	})
 }
 
 // @Summary		Create a new movie
 // @Description	Create a new movie
 // @Tags			Movies
 // @Param			movie	body		models.Movie	true	"Movie object to create"
-// @Success		201		{object}	models.Movie
-// @Failure		400		{object}	object{message=string}
+// @Success		201		{object}	dto.DataResponse[models.Movie]
+// @Failure		400		{object}	dto.ErrorResponse
 // @Router			/movies [post]
 func PostMovie(c *gin.Context) {
 	var newMovie models.Movie
 
 	if err := c.ShouldBindJSON(&newMovie); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid request body"})
+		c.IndentedJSON(http.StatusBadRequest, dto.ErrorResponse{
+			BaseResponse: dto.BaseResponse{
+				Message: "Invalid Movie body",
+				Success: false,
+			},
+		})
 		return
 	}
 
@@ -145,7 +165,13 @@ func PostMovie(c *gin.Context) {
 	newMovie.Id = database.MovieId
 
 	database.Movies = append(database.Movies, newMovie)
-	c.IndentedJSON(http.StatusCreated, newMovie)
+	c.IndentedJSON(http.StatusCreated, dto.DataResponse[models.Movie]{
+		BaseResponse: dto.BaseResponse{
+			Message: "Movie created successfully",
+			Success: true,
+		},
+		Data: newMovie,
+	})
 }
 
 // @Summary		Update a movie
@@ -153,9 +179,9 @@ func PostMovie(c *gin.Context) {
 // @Tags			Movies
 // @Param			id		path		int				true	"Movie ID"
 // @Param			movie	body		models.Movie	true	"Updated movie object"
-// @Success		200		{object}	models.Movie
-// @Failure		400		{object}	object{message=string}
-// @Failure		404		{object}	object{message=string}
+// @Success		200		{object}	dto.DataResponse[models.Movie]
+// @Failure		400		{object}	dto.ErrorResponse
+// @Failure		404		{object}	dto.ErrorResponse
 // @Router			/movies/{id} [put]
 func UpdateMovie(c *gin.Context) {
 	id := c.Param("id")
@@ -163,39 +189,65 @@ func UpdateMovie(c *gin.Context) {
 
 	idInt, err := strconv.Atoi(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid movie ID"})
+		c.IndentedJSON(http.StatusBadRequest, dto.ErrorResponse{
+			BaseResponse: dto.BaseResponse{
+				Message: "Invalid id",
+				Success: false,
+			},
+		})
 		return
 	}
 
 	if err := c.ShouldBindJSON(&updatedMovie); err != nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Invalid request body"})
+		c.IndentedJSON(http.StatusBadRequest, dto.ErrorResponse{
+			BaseResponse: dto.BaseResponse{
+				Message: "Invalid Movie body",
+				Success: false,
+			},
+		})
 		return
 	}
 
 	movie := findMovieById(idInt)
 	if movie == nil {
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Movie not found"})
+		c.IndentedJSON(http.StatusNotFound, dto.ErrorResponse{
+			BaseResponse: dto.BaseResponse{
+				Message: "Movie not found",
+				Success: false,
+			},
+		})
 		return
 	}
 
 	// check if id is updated, if so, check if it already exists
 	if updatedMovie.Id != movie.Id {
 		if findMovieById(updatedMovie.Id) != nil {
-			c.IndentedJSON(http.StatusBadRequest, gin.H{"message": "Movie with updated ID already exists"})
+			c.IndentedJSON(http.StatusBadRequest, dto.ErrorResponse{
+				BaseResponse: dto.BaseResponse{
+					Message: "Movie with updated ID already exists",
+					Success: false,
+				},
+			})
 			return
 		}
 	}
 
 	*movie = updatedMovie
-	c.IndentedJSON(http.StatusOK, updatedMovie)
+	c.IndentedJSON(http.StatusOK, dto.DataResponse[models.Movie]{
+		BaseResponse: dto.BaseResponse{
+			Message: "Movie updated successfully",
+			Success: true,
+		},
+		Data: *movie,
+	})
 }
 
 // @Summary		Delete a movie
 // @Description	Delete a movie by ID
 // @Tags			Movies
 // @Param			id	path		int	true	"Movie ID"
-// @Success		200	{object}	object{message=string}
-// @Failure		404	{object}	object{message=string}
+// @Success		200	{object}	dto.BaseResponse
+// @Failure		404	{object}	dto.ErrorResponse
 // @Router			/movies/{id} [delete]
 func DeleteMovie(c *gin.Context) {
 	id := c.Param("id")
@@ -203,10 +255,20 @@ func DeleteMovie(c *gin.Context) {
 	for i, movie := range database.Movies {
 		if id == strconv.Itoa(movie.Id) {
 			database.Movies = append(database.Movies[:i], database.Movies[i+1:]...)
-			c.IndentedJSON(http.StatusOK, gin.H{"message": "Movie deleted"})
+			c.IndentedJSON(http.StatusOK, dto.ErrorResponse{
+				BaseResponse: dto.BaseResponse{
+					Message: "Movie deleted successfully",
+					Success: false,
+				},
+			})
 			return
 		}
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
+	c.IndentedJSON(http.StatusNotFound, dto.ErrorResponse{
+		BaseResponse: dto.BaseResponse{
+			Message: "Movie not found",
+			Success: false,
+		},
+	})
 }

@@ -21,5 +21,5 @@ type PaginatedResponse[T any] struct {
 
 type ErrorResponse struct {
 	BaseResponse
-	Error string `json:"error"`
+	// Error string `json:"error"`
 }
