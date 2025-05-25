@@ -23,6 +23,21 @@ var Movies = []models.Movie{
 	},
 }
 
+// find movie by id also get latest primary key while at it
+func FindMovieById(id int) *models.Movie {
+	for _, movie := range Movies {
+		if movie.Id > MovieId {
+			MovieId = movie.Id
+		}
+
+		if movie.Id == id {
+			return &movie
+		}
+	}
+
+	return nil
+}
+
 func main() {
 	for _, movie := range Movies {
 		if movie.Id > MovieId {

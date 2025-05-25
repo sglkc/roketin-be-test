@@ -59,7 +59,6 @@ definitions:
         minItems: 1
         type: array
       id:
-        minimum: 1
         type: integer
       title:
         type: string

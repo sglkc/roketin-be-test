@@ -12,20 +12,6 @@ import (
 	"github.com/sglkc/roketin-be-test/chal-2/utils"
 )
 
-// find movie by id also get latest primary key while at it
-func findMovieById(id int) *models.Movie {
-	for _, movie := range database.Movies {
-		if movie.Id > database.MovieId {
-			database.MovieId = movie.Id
-		}
-
-		if movie.Id == id {
-			return &movie
-		}
-	}
-	return nil
-}
-
 // https://github.com/swaggo/swag/blob/master/README.md#declarative-comments-format
 
 // @Summary		Search movies
@@ -119,7 +105,7 @@ func GetMovieById(c *gin.Context) {
 		return
 	}
 
-	movie := findMovieById(idInt)
+	movie := database.FindMovieById(idInt)
 	if movie != nil {
 		c.IndentedJSON(http.StatusOK, dto.DataResponse[models.Movie]{
 			BaseResponse: dto.BaseResponse{
@@ -160,7 +146,7 @@ func PostMovie(c *gin.Context) {
 	}
 
 	// assume primary key is the latest ID in the list
-	findMovieById(newMovie.Id)
+	database.FindMovieById(newMovie.Id)
 	database.MovieId++
 	newMovie.Id = database.MovieId
 
@@ -208,7 +194,7 @@ func UpdateMovie(c *gin.Context) {
 		return
 	}
 
-	movie := findMovieById(idInt)
+	movie := database.FindMovieById(idInt)
 	if movie == nil {
 		c.IndentedJSON(http.StatusNotFound, dto.ErrorResponse{
 			BaseResponse: dto.BaseResponse{
@@ -221,7 +207,7 @@ func UpdateMovie(c *gin.Context) {
 
 	// check if id is updated, if so, check if it already exists
 	if updatedMovie.Id != movie.Id {
-		if findMovieById(updatedMovie.Id) != nil {
+		if database.FindMovieById(updatedMovie.Id) != nil {
 			c.IndentedJSON(http.StatusBadRequest, dto.ErrorResponse{
 				BaseResponse: dto.BaseResponse{
 					Message: "Movie with updated ID already exists",

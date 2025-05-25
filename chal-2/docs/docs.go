@@ -364,8 +364,7 @@ const docTemplate = `{
                     }
                 },
                 "id": {
-                    "type": "integer",
-                    "minimum": 1
+                    "type": "integer"
                 },
                 "title": {
                     "type": "string"
