@@ -34,7 +34,9 @@ func findMovieById(id int) *models.Movie {
 // @Param			description	query	string	false	"Movie description to search for"
 // @Param			artist		query	string	false	"Movie artist to search for"
 // @Param			genre		query	string	false	"Movie genre to search for"
-// @Success		200			{array}	Movie
+// @Param			page		query	int		false	"Page number for pagination"	default(1)
+// @Param			limit		query	int		false	"Number of movies per page"		default(10)
+// @Success		200			{array}	models.Movie
 // @Router			/movies/search [get]
 func SearchMovie(c *gin.Context) {
 	title := strings.ToLower(c.Query("title"))
@@ -50,10 +52,10 @@ func SearchMovie(c *gin.Context) {
 		movieArtists := strings.ToLower(strings.Join(movie.Artists, ", "))
 		movieGenres := strings.ToLower(strings.Join(movie.Genres, ", "))
 
-		if (strings.Contains(movieTitle, title)) ||
-			(strings.Contains(movieDescription, description)) ||
-			(strings.Contains(movieArtists, artist)) ||
-			(strings.Contains(movieGenres, genre)) {
+		if (title != "" && strings.Contains(movieTitle, title)) ||
+			(description != "" && strings.Contains(movieDescription, description)) ||
+			(artist != "" && strings.Contains(movieArtists, artist)) ||
+			(genre != "" && strings.Contains(movieGenres, genre)) {
 			filteredMovies = append(filteredMovies, movie)
 		}
 	}
@@ -66,7 +68,7 @@ func SearchMovie(c *gin.Context) {
 // @Tags			Movies
 // @Param			page	query	int	false	"Page number for pagination"	default(1)
 // @Param			limit	query	int	false	"Number of movies per page"		default(10)
-// @Success		200		{array}	Movie
+// @Success		200		{array}	models.Movie
 // @Router			/movies [get]
 func GetMovies(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, utils.Paginate(c, database.Movies))
@@ -76,7 +78,7 @@ func GetMovies(c *gin.Context) {
 // @Description	Get movie by ID
 // @Tags			Movies
 // @Param			id	path		int	true	"Movie ID"
-// @Success		200	{array}		Movie
+// @Success		200	{array}		models.Movie
 // @Failure		404	{object}	object{message=string}
 // @Router			/movies/{id} [get]
 func GetMovieById(c *gin.Context) {
@@ -100,8 +102,8 @@ func GetMovieById(c *gin.Context) {
 // @Summary		Create a new movie
 // @Description	Create a new movie
 // @Tags			Movies
-// @Param			movie	body		Movie	true	"Movie object to create"
-// @Success		201		{object}	Movie
+// @Param			movie	body		models.Movie	true	"Movie object to create"
+// @Success		201		{object}	models.Movie
 // @Failure		400		{object}	object{message=string}
 // @Router			/movies [post]
 func PostMovie(c *gin.Context) {
@@ -124,9 +126,9 @@ func PostMovie(c *gin.Context) {
 // @Summary		Update a movie
 // @Description	Update a movie by ID
 // @Tags			Movies
-// @Param			id		path		int		true	"Movie ID"
-// @Param			movie	body		Movie	true	"Updated movie object"
-// @Success		200		{object}	Movie
+// @Param			id		path		int				true	"Movie ID"
+// @Param			movie	body		models.Movie	true	"Updated movie object"
+// @Success		200		{object}	models.Movie
 // @Failure		400		{object}	object{message=string}
 // @Failure		404		{object}	object{message=string}
 // @Router			/movies/{id} [put]
@@ -176,10 +178,10 @@ func DeleteMovie(c *gin.Context) {
 	for i, movie := range database.Movies {
 		if id == strconv.Itoa(movie.Id) {
 			database.Movies = append(database.Movies[:i], database.Movies[i+1:]...)
-			c.IndentedJSON(http.StatusOK, gin.H{"message": "movie deleted"})
+			c.IndentedJSON(http.StatusOK, gin.H{"message": "Movie deleted"})
 			return
 		}
 	}
 
-	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "movie not found"})
+	c.IndentedJSON(http.StatusNotFound, gin.H{"message": "Movie not found"})
 }

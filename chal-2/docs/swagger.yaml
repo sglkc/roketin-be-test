@@ -1,7 +1,7 @@
 consumes:
 - application/json
 definitions:
-  main.Movie:
+  models.Movie:
     properties:
       artists:
         items:
@@ -19,6 +19,7 @@ definitions:
         minItems: 1
         type: array
       id:
+        minimum: 1
         type: integer
       title:
         type: string
@@ -56,7 +57,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.Movie'
+              $ref: '#/definitions/models.Movie'
             type: array
       summary: Get all movies
       tags:
@@ -69,12 +70,12 @@ paths:
         name: movie
         required: true
         schema:
-          $ref: '#/definitions/main.Movie'
+          $ref: '#/definitions/models.Movie'
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/main.Movie'
+            $ref: '#/definitions/models.Movie'
         "400":
           description: Bad Request
           schema:
@@ -125,7 +126,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.Movie'
+              $ref: '#/definitions/models.Movie'
             type: array
         "404":
           description: Not Found
@@ -150,12 +151,12 @@ paths:
         name: movie
         required: true
         schema:
-          $ref: '#/definitions/main.Movie'
+          $ref: '#/definitions/models.Movie'
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/main.Movie'
+            $ref: '#/definitions/models.Movie'
         "400":
           description: Bad Request
           schema:
@@ -198,7 +199,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/main.Movie'
+              $ref: '#/definitions/models.Movie'
             type: array
       summary: Search movies
       tags:

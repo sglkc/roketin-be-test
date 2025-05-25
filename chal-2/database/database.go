@@ -26,7 +26,7 @@ var Movies = []models.Movie{
 func main() {
 	for _, movie := range Movies {
 		if movie.Id > MovieId {
-			MovieId = movie.Id
+			MovieId = movie.Id + 1
 		}
 	}
 }

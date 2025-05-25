@@ -53,7 +53,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.Movie"
+                                "$ref": "#/definitions/models.Movie"
                             }
                         }
                     }
@@ -72,7 +72,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Movie"
+                            "$ref": "#/definitions/models.Movie"
                         }
                     }
                 ],
@@ -80,7 +80,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/main.Movie"
+                            "$ref": "#/definitions/models.Movie"
                         }
                     },
                     "400": {
@@ -136,7 +136,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.Movie"
+                                "$ref": "#/definitions/models.Movie"
                             }
                         }
                     }
@@ -165,7 +165,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/main.Movie"
+                                "$ref": "#/definitions/models.Movie"
                             }
                         }
                     },
@@ -202,7 +202,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/main.Movie"
+                            "$ref": "#/definitions/models.Movie"
                         }
                     }
                 ],
@@ -210,7 +210,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/main.Movie"
+                            "$ref": "#/definitions/models.Movie"
                         }
                     },
                     "400": {
@@ -280,7 +280,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "main.Movie": {
+        "models.Movie": {
             "type": "object",
             "required": [
                 "artists",
@@ -312,7 +312,8 @@ const docTemplate = `{
                     }
                 },
                 "id": {
-                    "type": "integer"
+                    "type": "integer",
+                    "minimum": 1
                 },
                 "title": {
                     "type": "string"

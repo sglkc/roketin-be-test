@@ -14,13 +14,13 @@ import (
 	"github.com/sglkc/roketin-be-test/chal-2/routes"
 )
 
-//	@title			Movies API
-//	@version		1.0
-//	@description	This is a sample movies API using Gin framework.
-//	@contact.name	sglkc
-//	@contact.url	https://github.com/sglkc/roketin-be-test
-//	@produce		json
-//	@accept			json
+// @title			Movies API
+// @version		1.0
+// @description	This is a sample movies API using Gin framework.
+// @contact.name	sglkc
+// @contact.url	https://github.com/sglkc/roketin-be-test
+// @produce		json
+// @accept			json
 func main() {
 	router := gin.Default()
 
